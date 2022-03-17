@@ -29,6 +29,10 @@ Sprite::Sprite(SDL_Renderer* pRenderer, const char* textureFilename)
 	src.h = dst.h;
 }
 
+Sprite::~Sprite()
+{
+}
+
 void Sprite::update(const float deltaTime)
 {
 	//displacement is a change in position
@@ -51,6 +55,11 @@ void Sprite::update(const float deltaTime)
 void Sprite::draw(SDL_Renderer* pRenderer)
 {
 	SDL_RenderCopyEx(pRenderer, pImage, &src, &dst, rotation, nullptr, SDL_FLIP_NONE); // Draw our texture at the destination position, width, and size
+}
+
+Vector2 Sprite::getSize()
+{
+	return Vector2{(float)dst.w, (float)dst.h};
 }
 
 void Sprite::setPosition(int x, int y)

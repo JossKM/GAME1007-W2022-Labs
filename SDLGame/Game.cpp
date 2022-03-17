@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <SDL_image.h>
 #include <iostream>
+#include "Bullet.h"
 
 Game::Game()
 {
@@ -36,8 +37,9 @@ void Game::run()
 	bRunning = true;
 
 	anotherShip = Sprite(pRenderer, "Assets/playerShip1_red.png");
-	anotherShip.setPosition(300, 200);
-	anotherShip.setRotation(180);
+	anotherShip.setPosition((windowSizeX*0.5) - (anotherShip.getSize().x * 0.5f), windowSizeY - (anotherShip.getSize().y) - 50);
+	anotherShip.setRotation(0);
+	sprites.push_back(&anotherShip); // & gives the address of the object anotherShip
 
 	float fixedDeltaTimeSeconds = 0.016; // seconds
 
@@ -70,6 +72,9 @@ void Game::input()
 		{
 			switch (lastInput.key.keysym.sym)
 			{
+			case(SDLK_SPACE):
+				isShootPressed = true;
+				break;
 			case(SDLK_w):
 				//std::cout << "Up" << std::endl;
 				isUpPressed = true;
@@ -91,6 +96,9 @@ void Game::input()
 		{
 			switch (lastInput.key.keysym.sym)
 			{
+			case(SDLK_SPACE):
+				isShootPressed = false;
+				break;
 			case(SDLK_w):
 				isUpPressed = false;
 				break;
@@ -113,6 +121,38 @@ void Game::update(const float deltaTime)
 	float acceleration = 3500.0f;
 	float deltaV = acceleration * deltaTime;
 
+	timeUntilNextShot = (timeUntilNextShot - deltaTime);
+	if (timeUntilNextShot < 0.0f)
+	{
+		timeUntilNextShot = 0.0f;
+	}
+
+	if (isShootPressed)
+	{
+		if (timeUntilNextShot <= 0.0f)
+		{
+			int numProjectiles = 3;
+			float totalSpread = 1.0f;
+			for (int i = 0; i < numProjectiles; i++)
+			{
+				float angle = (i * (totalSpread / numProjectiles)) - (totalSpread * 0.5);
+				Vector2 launchVector = Vector2{ sin(angle) * -bulletSpeed, cos(angle) * -bulletSpeed };
+
+				Bullet* newBullet = new Bullet(pRenderer, launchVector); // the new keyword creates an instance of the class and returns a pointer to it
+				//Danger of the new keyword is that we are responsible for releasing the memory allocated for this object with the keyword delete
+
+				//the -> operator gets you the object the pointer points at
+				newBullet->position.x = (anotherShip.position.x + (anotherShip.getSize().x * 0.5f)) - (newBullet->getSize().x * 0.5f);
+				// a->b() operator is actually a shortcut for (*a).b() which is derefencing the pointer, and then using the . operator on the object
+				(*newBullet).position.y = anotherShip.position.y;
+
+				Sprite* castedPointer = (Sprite*)newBullet; // Polymorphism allows the inheriting class "Bullet" to be treated like a "Sprite"
+				//Because a Bullet IS a Sprite
+				sprites.push_back(castedPointer); // Assigning a pointer 
+			}
+			timeUntilNextShot = delayBetweenShots;
+		}
+	}
 	if (isUpPressed)
 	{
 		anotherShip.velocity.y -= deltaV;
@@ -134,7 +174,43 @@ void Game::update(const float deltaTime)
 	anotherShip.velocity.x *= damping;
 	anotherShip.velocity.y *= damping;
 
-	anotherShip.update(deltaTime);
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		Sprite* pSprite = sprites[i];
+		pSprite->update(deltaTime);
+
+		Bullet* pBullet = (Bullet*)pSprite; // Casting a base class pointer to a child class (not always successful)
+		//If unsuccessfule (i.e. it's not a bullet) then the pointer after the cast will be null
+		if (pBullet != nullptr) // success. Must be a bullet...
+		{
+			if (pBullet->position.y > windowSizeY
+				|| pBullet->position.y < -pBullet->getSize().y
+				|| pBullet->position.x < -pBullet->getSize().x
+				|| pBullet->position.x > windowSizeX
+				)
+			{
+				pBullet->isMarkedForDeletion = true;
+			}
+		}
+	}
+
+	for (auto iterator = sprites.begin(); iterator != sprites.end();)
+	{
+		Sprite* pSprite = (*iterator);
+		if (pSprite->isMarkedForDeletion)
+		{
+			pSprite->cleanup();
+			delete pSprite; // clears the memory
+			pSprite = nullptr;
+			iterator = sprites.erase(iterator); // remove element from container
+		}
+		else
+		{
+			iterator++;
+		}
+	}
+
+	sprites.shrink_to_fit(); // frees some memory
 }
 
 void Game::draw()
@@ -142,8 +218,11 @@ void Game::draw()
 	SDL_SetRenderDrawColor(pRenderer, 245, 180, 180, 255); // Select a color
 	SDL_RenderClear(pRenderer); // Paint the canvas according to the last selected color
 
-	//Drawing a ship
-	anotherShip.draw(pRenderer);
+	//Draw all the things
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		sprites[i]->draw(pRenderer);
+	}
 
 	SDL_RenderPresent(pRenderer); // Show the canvas
 }

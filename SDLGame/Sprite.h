@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL_image.h>
+#include "Vector2.h"
 
 // A sprite is any image which lives on the screen and can be moved about
 //Sprite should contain functionality to load an image, and have its own position
@@ -26,14 +27,6 @@
 //myShip.setRotation(180)
 
 
-//2-dimensional vector
-struct Vector2
-{
-	float x;
-	float y;
-};
-
-
 //Declaring a new class called Sprite
 class Sprite
 {
@@ -46,21 +39,26 @@ private:
 	double rotation;
 
 public:
-
+	bool isMarkedForDeletion = false;
 	Vector2 position = {0,0};
 	Vector2 velocity = {0,0};
 
 	//Constructors
 	Sprite(); // default constructor
 	Sprite(SDL_Renderer* pRenderer, const char* textureFilename); // constructor with parameters for the image file
+	virtual ~Sprite(); // The keyword "virtual" has to do with a cool feature of programming languages called "polymorphism". 
+	//marking a function virtual means it can be "overridden" by a class that inherits from this class
 
 	//Updates position based on position and velocity vectors
-	void update(const float deltaTime);
+	virtual void update(const float deltaTime);
 
 	//Declaring Member functions <return type><name>(<parameters>)
-	void draw(SDL_Renderer* pRenderer);
+	virtual void draw(SDL_Renderer* pRenderer);
 
-	//setters, or modifiers
+	//getters, also called "accessors"
+	Vector2 getSize();
+
+	//setters, also called "modifiers" or "mutators"
 	void setPosition(int x, int y);
 	void moveBy(int x, int y);
 	void setDimensions(int width, int height);
