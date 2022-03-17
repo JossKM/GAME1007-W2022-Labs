@@ -17,13 +17,17 @@
 // Will NOT show you in the labs
 // -How to make enemies shoot back
 // -Infinitely scrolling background
-// -Sorting
+// -Sorting sprites
+// -Bosses etc.
+// -Hitpoints/lives for the player
+// -Win/Loss/Progression for the game
 // -Screen boundaries
 //////
 
 #pragma once
 #include <SDL.h> 
 #include "Sprite.h"
+#include <vector>
 
 class Game
 {
@@ -35,12 +39,16 @@ class Game
 	bool bIsRunning = false;
 
 	Sprite myShip;
-	Sprite myBullet;
 	Sprite myBackground;
+	std::vector<Sprite*> sprites;
+
+	const float timeBetweenShots = 0.25f; // this represents fire rate (1/fire rate to be exact)
+	float timeBeforeNextShot = 0.0f; // this will tick down
 
 	float gameTime = 0.0f; // seconds since start of game
 	float fixedDeltaTime = 0.016f; // time between frames 0.016 == 1/60
 
+	bool isShootPressed = false;
 	bool isUpPressed	= false;
 	bool isDownPressed	= false;
 	bool isLeftPressed	= false;

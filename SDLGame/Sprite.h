@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL_image.h>
-
+#include "Vector2.h"
 //Sprite class
 //A sprite is an image with a position that can be moved around, and drawn to the screen
 
@@ -29,12 +29,6 @@ A Sprite can do (functions):
 
 */
 
-struct Vector2
-{
-	float x;
-	float y;
-};
-
 class Sprite
 {
 private:
@@ -43,6 +37,7 @@ private:
 	SDL_Rect dst; // destination rectangle for rendering. Represents where the sprite will be drawn on-screen, and how big it will be when drawn
 
 public:
+	bool isMarkedForDeletion = false;
 	Vector2 position = { 0, 0 };
 	Vector2 velocity = { 0, 0 };
 
@@ -51,6 +46,10 @@ public:
 	Sprite(SDL_Renderer* pRenderer, const char* filename); // 
 
 	//Member Functions. <return type><name>(<parameters>)
+	
+	//Accessor or 'getter' function (only gets info about the object
+	Vector2 getSize();
+	
 	//Modifier or 'setter' function (changes something about the object)
 	void setPosition(const float x, const float y);
 	void moveBy(const float xOffset, const float yOffset);

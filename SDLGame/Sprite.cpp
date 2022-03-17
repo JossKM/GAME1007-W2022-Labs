@@ -63,6 +63,11 @@ void Sprite::update(const float deltaTime)
 	dst.y = position.y;
 }
 
+Vector2 Sprite::getSize()
+{
+	return Vector2{(float)dst.w, (float)dst.h};
+}
+
 void Sprite::draw(SDL_Renderer* pRenderer) const
 {
 	SDL_RenderCopy(pRenderer, pTexture, &src, &dst); // Draw texture

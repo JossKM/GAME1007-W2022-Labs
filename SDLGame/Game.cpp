@@ -1,6 +1,7 @@
 #include "Game.h"
 #include <SDL_image.h>
 #include <iostream>
+#include "Bullet.h"
 
 Game::Game()
 {
@@ -41,6 +42,7 @@ int Game::run()
 
 	myShip = Sprite(pRenderer, "Assets/playerShip3_red.png");
 	myShip.setPosition(400, 300);
+	//sprites.push_back(&myShip); // & is the reference operator. It will return a pointer to the address of the object to its right
 
 	myBackground = Sprite(pRenderer, "Assets/Backgrounds/purple.png");
 	myBackground.setSize(800, 600);
@@ -79,6 +81,9 @@ void Game::input()
 		{
 			switch (lastEvent.key.keysym.sym)
 			{
+			case(SDLK_SPACE):
+				isShootPressed = true;
+				break;
 			case(SDLK_w):
 				isUpPressed = true;
 				break;
@@ -91,15 +96,15 @@ void Game::input()
 			case(SDLK_a):
 				isLeftPressed = true;
 				break;
-			case(SDLK_SPACE):
-				//TODO
-				break;
 			}
 
 		} else if (lastEvent.type == SDL_KEYUP)
 		{
 			switch (lastEvent.key.keysym.sym)
 			{
+			case(SDLK_SPACE):
+				isShootPressed = false;
+				break;
 			case(SDLK_w):
 				isUpPressed = false;
 				break;
@@ -172,7 +177,83 @@ void Game::update(const float deltaTime)
 	myShip.velocity.x *= damping * deltaTime;
 	myShip.velocity.y *= damping * deltaTime;
 
+	timeBeforeNextShot -= deltaTime;
+
+	if (isShootPressed)
+	{
+		if (timeBeforeNextShot <= 0.0f)
+		{
+			int projectilesPerShot = 3;
+			float spread = 1.0f;
+			float bulletSpeed = 400.0f;
+			for (int i = 0; i < projectilesPerShot; i++)
+			{
+				float angle = ((spread / projectilesPerShot) * i) + (spread);
+
+				std::cout << "shoot!" << std::endl;
+				Bullet* pNewBullet = new Bullet(pRenderer); // the new keyword creates an instance of that class type, and returns a pointer to it
+				// The danger of the new keyword is that we are now responsible for deallocating the memory for this object with the keyword delete
+				Sprite* pBulletCastedToSprite = (Sprite*)pNewBullet; // cast from child class to base class pointer
+
+				Vector2 launchPosition = Vector2{ myShip.position.x + (myShip.getSize().x * 0.5f) - (pNewBullet->getSize().x * 0.5f),
+													myShip.position.y
+				};
+
+				Vector2 launchVelocity = Vector2{ cos(angle) * bulletSpeed,
+												  sin(angle) * -bulletSpeed
+				};
+
+				pNewBullet->position = launchPosition;
+				pNewBullet->velocity = launchVelocity;
+
+				sprites.push_back(pBulletCastedToSprite);
+			}
+
+			timeBeforeNextShot = timeBetweenShots;
+		}
+	}
+
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		Sprite* pSprite = sprites[i];
+
+		if (pSprite->position.x > windowSizeX
+			|| pSprite->position.x < pSprite->getSize().x
+			|| pSprite->position.y > windowSizeY
+			|| pSprite->position.y < -pSprite->getSize().y
+			)
+		{
+			pSprite->isMarkedForDeletion = true;
+		}
+
+		pSprite->update(deltaTime);
+	}
 	myShip.update(deltaTime);
+
+	//Loop to Destroy sprites as needed
+	for (auto iterator = sprites.begin(); iterator != sprites.end();)
+	{
+		//To get an element from an iterator, use the dereference operator *, which usually turns a pointer into an object
+		Sprite* pSprite = (*iterator);
+
+		// -> is a shortcut for dereferencing a pointer, then using the "." operator on it,
+		// i.e. a->b is equivalent to (*a).b
+		if ((*pSprite).isMarkedForDeletion)
+		{
+			//clear the memory from the image of the sprite!
+			pSprite->cleanup();
+			// destroy it!
+			delete pSprite; // deallocate memory that this pointer points to
+			pSprite = nullptr;
+			iterator = sprites.erase(iterator); // Remove this element from the container
+		}
+		else
+		{
+			iterator++;
+		}
+	}
+
+	sprites.shrink_to_fit();
 }
 
 void Game::draw()
@@ -181,10 +262,12 @@ void Game::draw()
 	SDL_SetRenderDrawColor(pRenderer, 255, 200, 200, 255); // Choose a color
 	SDL_RenderClear(pRenderer); // Clear canvas to color chosen
 
-
 	myBackground.draw(pRenderer);
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		sprites[i]->draw(pRenderer);
+	}
 	myShip.draw(pRenderer);
-
 
 	SDL_RenderPresent(pRenderer); // Make updated canvas visible on screen
 }
@@ -201,5 +284,10 @@ void Game::cleanup()
 	SDL_DestroyWindow(pWindow);
 
 	myShip.cleanup();
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		sprites[i]->cleanup();
+		delete sprites[i];
+	}
 	myBackground.cleanup();
 }
