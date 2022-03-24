@@ -29,7 +29,7 @@
 class Game
 {
 	int windowSizeX = 800; // Declaring integer called windowSizeX, assigning it the value 800
-	int windowSizeY = 600;
+	int windowSizeY = 900;
 	const char* windowName = "Hello SDL";
 	SDL_Window* pWindow = nullptr; // Declaring a SDL_Window* (pointer to an object of type SDL_Window) called pWindow, assigning it the value nullptr
 	SDL_Renderer* pRenderer = nullptr;
@@ -51,6 +51,11 @@ class Game
 	bool isLeftPressed	= false;
 	bool isRightPressed	= false;
 
+	//Enemy spawns
+	float enemySpawnTimer = 0.0f;
+	float enemySpawnInterval = 2.0f;
+	const float enemySpawnIntervalMin = 0.2f;
+
 public:
 	Game();
 
@@ -60,5 +65,7 @@ public:
 	void draw();
 	void quit();
 	void cleanup();
+
+	void spawnEnemy();
 };
 

@@ -41,11 +41,11 @@ int Game::run()
 	}
 
 	myShip = Sprite(pRenderer, "Assets/playerShip3_red.png");
-	myShip.setPosition(400, 300);
+	myShip.setPosition(windowSizeX/2 - myShip.getSize().x*0.5, windowSizeY - myShip.getSize().y);
 	//sprites.push_back(&myShip); // & is the reference operator. It will return a pointer to the address of the object to its right
 
 	myBackground = Sprite(pRenderer, "Assets/Backgrounds/purple.png");
-	myBackground.setSize(800, 600);
+	myBackground.setSize(windowSizeX, windowSizeY);
 
 	bIsRunning = true;
 
@@ -124,6 +124,20 @@ void Game::input()
 
 void Game::update(const float deltaTime)
 {
+	//Every t seconds, spawn an asteroid
+	enemySpawnTimer -= deltaTime;
+
+	if (enemySpawnTimer < 0.0f)
+	{
+		spawnEnemy();
+		enemySpawnTimer = enemySpawnInterval;
+
+		if (enemySpawnInterval > enemySpawnIntervalMin)
+		{
+			enemySpawnInterval -= 0.1;
+		}
+	}
+
 	//acceleration = change in velocity over time
 	float acceleration = 3000;
 	float deltaV = acceleration * deltaTime;
@@ -188,7 +202,7 @@ void Game::update(const float deltaTime)
 			float bulletSpeed = 400.0f;
 			for (int i = 0; i < projectilesPerShot; i++)
 			{
-				float angle = ((spread / projectilesPerShot) * i) + (spread);
+				float angle = ((spread / (projectilesPerShot - 1)) * i) + (spread);
 
 				std::cout << "shoot!" << std::endl;
 				Bullet* pNewBullet = new Bullet(pRenderer); // the new keyword creates an instance of that class type, and returns a pointer to it
@@ -290,4 +304,41 @@ void Game::cleanup()
 		delete sprites[i];
 	}
 	myBackground.cleanup();
+}
+
+void Game::spawnEnemy()
+{
+	int startVelocityVarianceX = 50;
+	int startVelocityY = 200;
+
+	const int NUM_ASTEROID_SPRITES = 8;
+	const char* asteroidSpriteImages[NUM_ASTEROID_SPRITES] = 
+	{	"Assets/Meteors/meteorBrown_big1.png",
+		"Assets/Meteors/meteorGrey_big2.png",
+		"Assets/Meteors/meteorBrown_big3.png",
+		"Assets/Meteors/meteorBrown_small1.png",
+		"Assets/Meteors/meteorBrown_small2.png",
+		"Assets/Meteors/meteorGrey_med2.png",
+		"Assets/Meteors/meteorGrey_small1.png",
+		"Assets/Meteors/meteorGrey_tiny2.png"
+	};
+	const char* spriteToSpawn = asteroidSpriteImages[rand() % NUM_ASTEROID_SPRITES];
+
+	Sprite* pNewEnemy = new Sprite(pRenderer, spriteToSpawn);
+	//Set start at random position near top of screen
+	Vector2 size = pNewEnemy->getSize();
+
+	Vector2 spawnPosition = Vector2{float(rand() % (windowSizeX - (int)size.x)),
+									-size.y
+	};
+	pNewEnemy->position = spawnPosition;
+
+	//Set start velocity
+	Vector2 spawnVelocity = Vector2{ float((rand() % startVelocityVarianceX) - (startVelocityVarianceX/2)),
+									float(startVelocityY) 
+	};
+	pNewEnemy->velocity = spawnVelocity;
+
+	//Add to list of sprites to update/draw
+	sprites.push_back(pNewEnemy);
 }

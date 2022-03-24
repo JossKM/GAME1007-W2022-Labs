@@ -49,6 +49,8 @@ public:
 	
 	//Accessor or 'getter' function (only gets info about the object
 	Vector2 getSize();
+
+	bool isCollidingWith(Sprite* other);
 	
 	//Modifier or 'setter' function (changes something about the object)
 	void setPosition(const float x, const float y);
