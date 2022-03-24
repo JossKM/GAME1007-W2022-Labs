@@ -1,10 +1,7 @@
-//////
-//
-// Welcome to the lab! Today we will add more sprites and shooting mechanics to the game
-// The lab begins at 12:10. Please be prepared with your projects
-// If you need it for reference, the code for SDL setup has been pushed to GitHub
+// Welcome to the lab! Today we will add targets to shoot!
+// If you need it for reference, the code for shooting has been pushed to GitHub
 // 
-// Quiz 7 available
+// Quiz 8 available
 // 
 // At the end of all the labs... we will do..
 // -Basic collision detection between sprites
@@ -22,7 +19,7 @@
 // -Hitpoints/lives for the player
 // -Win/Loss/Progression for the game
 // -Screen boundaries
-//////
+
 
 #pragma once
 #include <SDL.h> 
