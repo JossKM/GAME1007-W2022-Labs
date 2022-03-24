@@ -1,4 +1,5 @@
 #include "Sprite.h"
+#include <minmax.h>
 
 //Constructors define what to do when creating an object of this class type
 Sprite::Sprite()
@@ -92,4 +93,36 @@ void Sprite::setRotation(double rotationDegrees)
 void Sprite::cleanup()
 {
 	SDL_DestroyTexture(pImage);
+}
+
+bool Sprite::isCollidingWith(Sprite* other)
+{
+	//1. Find the distance between this sprite and the other
+	//1.a. Find a vector from this sprite to the other using vector subtraction
+	Vector2 displacementBetween =
+	{
+		other->position.x - position.x,
+		other->position.y - position.y
+	};
+
+	//1.b. Find the length of that vector using pythagorean theorem
+	//square sides, add, take square root
+	float distance = sqrt(pow(displacementBetween.x,2) + pow(displacementBetween.y, 2));
+
+	//2. Find the sum of the radii of circles surrounding these sprites
+	//2.a find an appropriate radius for each sprite based on their size?
+	float myRadius = max(getSize().x, getSize().y);
+	float otherRadius = max(other->getSize().x, other->getSize().y);
+	//2.b. add them
+	float sumRadii = myRadius + otherRadius;
+
+	//3. Check if the distance is less than the sum of the radii. If so, they are colliding. If not, they are not.
+	if (distance < sumRadii)
+	{
+		return true; // Collision!
+	}
+	else
+	{
+		return false;
+	}
 }

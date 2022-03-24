@@ -118,6 +118,23 @@ void Game::input()
 
 void Game::update(const float deltaTime)
 {
+	enemySpawnTimer -= deltaTime;
+	///Spawn asteroids periodically
+	if (enemySpawnTimer <= 0)
+	{
+		spawnEnemy();
+		enemySpawnTimer = enemySpawnDelay;
+
+		if (enemySpawnDelay > 1.0f)
+		{
+			enemySpawnDelay -= 0.1f;  // increase difficulty?
+		}
+	}
+
+	/// <summary>
+	///  Player actions
+	/// </summary>
+	/// <param name="deltaTime"></param>
 	float acceleration = 3500.0f;
 	float deltaV = acceleration * deltaTime;
 
@@ -135,7 +152,7 @@ void Game::update(const float deltaTime)
 			float totalSpread = 1.0f;
 			for (int i = 0; i < numProjectiles; i++)
 			{
-				float angle = (i * (totalSpread / numProjectiles)) - (totalSpread * 0.5);
+				float angle = (i * (totalSpread / (numProjectiles- 1))) - (totalSpread * 0.5);
 				Vector2 launchVector = Vector2{ sin(angle) * -bulletSpeed, cos(angle) * -bulletSpeed };
 
 				Bullet* newBullet = new Bullet(pRenderer, launchVector); // the new keyword creates an instance of the class and returns a pointer to it
@@ -179,7 +196,7 @@ void Game::update(const float deltaTime)
 		Sprite* pSprite = sprites[i];
 		pSprite->update(deltaTime);
 
-		Bullet* pBullet = (Bullet*)pSprite; // Casting a base class pointer to a child class (not always successful)
+		Bullet* pBullet = dynamic_cast<Bullet*>(pSprite); // Casting a base class pointer to a child class (not always successful)
 		//If unsuccessfule (i.e. it's not a bullet) then the pointer after the cast will be null
 		if (pBullet != nullptr) // success. Must be a bullet...
 		{
@@ -209,8 +226,6 @@ void Game::update(const float deltaTime)
 			iterator++;
 		}
 	}
-
-	sprites.shrink_to_fit(); // frees some memory
 }
 
 void Game::draw()
@@ -225,6 +240,31 @@ void Game::draw()
 	}
 
 	SDL_RenderPresent(pRenderer); // Show the canvas
+}
+
+void Game::handlePlayerActions(const float deltaTime)
+{
+}
+
+void Game::spawnEnemy()
+{
+	const int NUM_SPRITES = 3;
+	std::string enemySprites[NUM_SPRITES] = {
+		"Assets/Meteors/meteorBrown_big1.png",
+		"Assets/Meteors/meteorBrown_big2.png",
+		"Assets/Meteors/meteorBrown_big3.png"
+	};
+	const char* spriteFileToChoose = (enemySprites[rand() % NUM_SPRITES]).c_str(); //Choose a random sprite
+	Sprite* newEnemy = new Sprite(pRenderer, spriteFileToChoose);
+
+	//Spawn near top of screen
+	int xStart = (rand() % windowSizeX) - (newEnemy->getSize().x);
+	int yStart = (rand() % 10) - newEnemy->getSize().y;
+	newEnemy->setPosition(xStart, yStart);
+
+	newEnemy->velocity = Vector2{float((rand() % 200) - 100), float((rand() % 100) + 100.0f)};
+
+	sprites.push_back(newEnemy);
 }
 
 void Game::quit()

@@ -47,6 +47,9 @@ class Game
 	bool isDownPressed = false;
 	bool isLeftPressed = false;
 
+	float enemySpawnTimer = 0.0f;
+	float enemySpawnDelay = 5.0f;
+
 public:
 	//Constructor
 	Game();
@@ -58,6 +61,9 @@ public:
 	void input();
 	void update(const float deltaTime);
 	void draw();
+
+	void handlePlayerActions(const float deltaTime);
+	void spawnEnemy();
 
 	void quit();
 

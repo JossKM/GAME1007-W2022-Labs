@@ -68,5 +68,7 @@ public:
 
 	//getters
 	SDL_Point getPosition();
+
+	bool isCollidingWith(Sprite* other); // return true if colliding (circle-circle) and false otherwise
 };
 
