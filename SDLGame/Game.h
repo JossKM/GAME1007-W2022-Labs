@@ -1,15 +1,14 @@
-// Welcome to the lab! Today we will add targets to shoot!
-// If you need it for reference, the code for shooting has been pushed to GitHub
+// Welcome to the lab! Today we will try to destroy our targets on collision with bullets
+// If you need it for reference, the code from last week has been pushed to GitHub
 // 
-// Quiz 8 available
 // 
 // At the end of all the labs... we will do..
-// -Basic collision detection between sprites
-// -Hold space to shoot
-// -Spawn targets to shoot
-// -Detect when player touches a target
-// -Detect when player bullet touches a target
-// -Play music and sounds
+// -Basic collision detection between sprites... todo
+// -Hold space to shoot... done
+// -Spawn targets to shoot... done
+// -Detect when player touches a target... todo
+// -Detect when player bullet touches a target... todo
+// -Play music and sounds... todo
 // 
 // Will NOT show you in the labs
 // -How to make enemies shoot back
