@@ -3,7 +3,7 @@
 // 
 // 
 // At the end of all the labs... we will do..
-// -Basic collision detection between sprites... todo
+// -Basic collision detection between sprites... done
 // -Hold space to shoot... done
 // -Spawn targets to shoot... done
 // -Detect when player touches a target... todo
@@ -33,6 +33,8 @@ class Game
 	SDL_Window* pWindow = nullptr; // Declaring a SDL_Window* (pointer to an object of type SDL_Window) called pWindow, assigning it the value nullptr
 	SDL_Renderer* pRenderer = nullptr;
 	bool bIsRunning = false;
+
+	Sprite myShipTest; // just for testing
 
 	Sprite myShip;
 	Sprite myBackground;
@@ -65,6 +67,8 @@ public:
 	void quit();
 	void cleanup();
 
+	void updatePlayerActions(const float deltaTime);
+	void updateCollisionChecks();
 	void spawnEnemy();
 };
 

@@ -29,6 +29,14 @@ A Sprite can do (functions):
 
 */
 
+enum class SpriteTag 
+{
+	NONE = -1,
+	PLAYER, 
+	ASTEROID,
+	BULLET
+};
+
 class Sprite
 {
 private:
@@ -40,6 +48,8 @@ public:
 	bool isMarkedForDeletion = false;
 	Vector2 position = { 0, 0 };
 	Vector2 velocity = { 0, 0 };
+	
+	SpriteTag tag = SpriteTag::NONE;
 
 	//Constructors. Special functions used when creating an object of this class.
 	Sprite(); // Default constructor
@@ -50,6 +60,7 @@ public:
 	//Accessor or 'getter' function (only gets info about the object
 	Vector2 getSize();
 
+	//designed so we can write lines which look like regular language e.g. ship->isCollidingWith(asteroid)
 	bool isCollidingWith(Sprite* other);
 	
 	//Modifier or 'setter' function (changes something about the object)
@@ -63,3 +74,7 @@ public:
 	void cleanup();
 };
 
+
+//Note the way we design our function signatures seriously affects their legibility
+//bool collision(int x1, int y1, int radius1, int x2, int y2, int radius2)
+//if(collision(30, 50, 20, 70, 80, 30));

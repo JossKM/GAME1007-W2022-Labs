@@ -70,7 +70,7 @@ bool Sprite::isCollidingWith(Sprite* other)
 	//1.1. Define radius of each based on size of sprite
 	//1.2. Define position based on position of sprite
 	float myRadius = max(getSize().x, getSize().y) * 0.5f;
-	float otherRadius = max(getSize().x, getSize().y) * 0.5f;
+	float otherRadius = max(other->getSize().x, other->getSize().y) * 0.5f;
 	
 	//2. Find the sum of both radii
 	float sumRadii = myRadius + otherRadius;
@@ -79,16 +79,23 @@ bool Sprite::isCollidingWith(Sprite* other)
 	//3.1 subtract positions to get vector from one to the other
 	Vector2 displacement = Vector2
 	{
-		other->position.x - position.y,
+		other->position.x - position.x,
 		other->position.y - position.y
 	};
 	//3.2 use pythagorean theorem to find length of the displacment vector between sprites
 	//sqrt(x^2+y^2)
+	float distance = sqrt(pow(displacement.x,2) + pow(displacement.y, 2));
 
 	//4. If distance between them is less than the sum of radii, they are colliding 
 	//if(d <= r1+r2) then true
-
-	return false;
+	if (distance <= sumRadii)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 Vector2 Sprite::getSize()

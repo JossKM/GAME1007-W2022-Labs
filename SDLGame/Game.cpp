@@ -44,6 +44,10 @@ int Game::run()
 	myShip.setPosition(windowSizeX/2 - myShip.getSize().x*0.5, windowSizeY - myShip.getSize().y);
 	//sprites.push_back(&myShip); // & is the reference operator. It will return a pointer to the address of the object to its right
 
+	myShipTest = Sprite(pRenderer, "Assets/playerShip2_red.png");
+	myShipTest.setPosition(windowSizeX / 2 - myShip.getSize().x * 0.5, windowSizeY - myShip.getSize().y);
+	sprites.push_back(&myShipTest);
+
 	myBackground = Sprite(pRenderer, "Assets/Backgrounds/purple.png");
 	myBackground.setSize(windowSizeX, windowSizeY);
 
@@ -124,6 +128,8 @@ void Game::input()
 
 void Game::update(const float deltaTime)
 {
+	updateCollisionChecks();
+
 	//Every t seconds, spawn an asteroid
 	enemySpawnTimer -= deltaTime;
 
@@ -138,10 +144,93 @@ void Game::update(const float deltaTime)
 		}
 	}
 
+	updatePlayerActions(deltaTime);
+
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		Sprite* pSprite = sprites[i];
+
+		if (pSprite->position.x > windowSizeX
+			|| pSprite->position.x < pSprite->getSize().x
+			|| pSprite->position.y > windowSizeY
+			|| pSprite->position.y < -pSprite->getSize().y
+			)
+		{
+			pSprite->isMarkedForDeletion = true;
+		}
+
+		pSprite->update(deltaTime);
+	}
+	myShip.update(deltaTime);
+
+	//Loop to Destroy sprites as needed
+	for (auto iterator = sprites.begin(); iterator != sprites.end();)
+	{
+		//To get an element from an iterator, use the dereference operator *, which usually turns a pointer into an object
+		Sprite* pSprite = (*iterator);
+
+		// -> is a shortcut for dereferencing a pointer, then using the "." operator on it,
+		// i.e. a->b is equivalent to (*a).b
+		if ((*pSprite).isMarkedForDeletion)
+		{
+			//clear the memory from the image of the sprite!
+			pSprite->cleanup();
+			// destroy it!
+			delete pSprite; // deallocate memory that this pointer points to
+			pSprite = nullptr;
+			iterator = sprites.erase(iterator); // Remove this element from the container
+		}
+		else
+		{
+			iterator++;
+		}
+	}
+
+	sprites.shrink_to_fit();
+}
+
+void Game::draw()
+{
+	//Render
+	SDL_SetRenderDrawColor(pRenderer, 255, 200, 200, 255); // Choose a color
+	SDL_RenderClear(pRenderer); // Clear canvas to color chosen
+
+	myBackground.draw(pRenderer);
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		sprites[i]->draw(pRenderer);
+	}
+	myShip.draw(pRenderer);
+
+	SDL_RenderPresent(pRenderer); // Make updated canvas visible on screen
+}
+
+void Game::quit()
+{
+	bIsRunning = false;
+}
+
+void Game::cleanup()
+{
+	// Clean up
+	SDL_DestroyRenderer(pRenderer);
+	SDL_DestroyWindow(pWindow);
+
+	myShip.cleanup();
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		sprites[i]->cleanup();
+		delete sprites[i];
+	}
+	myBackground.cleanup();
+}
+
+void Game::updatePlayerActions(const float deltaTime)
+{
 	//acceleration = change in velocity over time
 	float acceleration = 3000;
 	float deltaV = acceleration * deltaTime;
-	
+
 	Vector2 inputVector =
 	{
 		0,
@@ -226,84 +315,73 @@ void Game::update(const float deltaTime)
 			timeBeforeNextShot = timeBetweenShots;
 		}
 	}
+}
 
+// Let us write this together! Please write code or pseudocode and send it to me in a private message, then tell me 
+// If/how much bonus marks you feel it is worth and why
+// Minimum bid at 0.5% of the final grade
+// Consider that one weekly quiz is 2.5%
+// You can earn several separate bonuses, not just one
+void Game::updateCollisionChecks()
+{
+	//Test
+	if (myShip.isCollidingWith(&myShipTest))
+	{
+		std::cout << "collide!" << std::endl;
+	}
+	
+// -Detect when player touches any asteroid and respond... todo
+//		-destroy the player?
+	
 	for (int i = 0; i < sprites.size(); i++)
 	{
 		Sprite* pSprite = sprites[i];
-
-		if (pSprite->position.x > windowSizeX
-			|| pSprite->position.x < pSprite->getSize().x
-			|| pSprite->position.y > windowSizeY
-			|| pSprite->position.y < -pSprite->getSize().y
-			)
+		if (pSprite->tag == SpriteTag::ASTEROID)
 		{
-			pSprite->isMarkedForDeletion = true;
-		}
-
-		pSprite->update(deltaTime);
-	}
-	myShip.update(deltaTime);
-
-	//Loop to Destroy sprites as needed
-	for (auto iterator = sprites.begin(); iterator != sprites.end();)
-	{
-		//To get an element from an iterator, use the dereference operator *, which usually turns a pointer into an object
-		Sprite* pSprite = (*iterator);
-
-		// -> is a shortcut for dereferencing a pointer, then using the "." operator on it,
-		// i.e. a->b is equivalent to (*a).b
-		if ((*pSprite).isMarkedForDeletion)
-		{
-			//clear the memory from the image of the sprite!
-			pSprite->cleanup();
-			// destroy it!
-			delete pSprite; // deallocate memory that this pointer points to
-			pSprite = nullptr;
-			iterator = sprites.erase(iterator); // Remove this element from the container
-		}
-		else
-		{
-			iterator++;
+			if (myShip.isCollidingWith(pSprite))
+			{
+				if (!myShip.isMarkedForDeletion)
+				{
+					myShip.isMarkedForDeletion = true;
+					std::cout << "Game Over (but not really)" << std::endl; // TODO: add game over
+				}
+			}
 		}
 	}
 
-	sprites.shrink_to_fit();
-}
+// -We could have a container just for asteroids and one just for bullets...
+// -rewrite the bullet collision code
+// -add loops to draw and update our asteroids
+// -We could add some way to detect if a sprite in our container is a bullet or asteroid or whatever
 
-void Game::draw()
-{
-	//Render
-	SDL_SetRenderDrawColor(pRenderer, 255, 200, 200, 255); // Choose a color
-	SDL_RenderClear(pRenderer); // Clear canvas to color chosen
-
-	myBackground.draw(pRenderer);
+// -Detect when player bullet touches a target and respond... todo (note, this is more difficult than the other one)
+//		-destroy both
+//Check every sprite against every other...
+//	Foreach sprite A...
+//		Foreach other sprite B...
+//			if A and B are a bullet and a sprite
+//				if A colliding with B then...
+//					blow up both of them
+	
 	for (int i = 0; i < sprites.size(); i++)
 	{
-		sprites[i]->draw(pRenderer);
+		Sprite* pSpriteA = sprites[i];
+
+		for (int j = i + 1; j < sprites.size(); j++)
+		{
+			Sprite* pSpriteB = sprites[j];
+
+			if (pSpriteA->isCollidingWith(pSpriteB))
+			{
+				if (pSpriteA->tag == SpriteTag::BULLET && pSpriteB->tag == SpriteTag::ASTEROID ||
+					pSpriteA->tag == SpriteTag::ASTEROID && pSpriteB->tag == SpriteTag::BULLET)
+				{
+					pSpriteA->isMarkedForDeletion = true;
+					pSpriteB->isMarkedForDeletion = true;
+				}
+			}
+		}
 	}
-	myShip.draw(pRenderer);
-
-	SDL_RenderPresent(pRenderer); // Make updated canvas visible on screen
-}
-
-void Game::quit()
-{
-	bIsRunning = false;
-}
-
-void Game::cleanup()
-{
-	// Clean up
-	SDL_DestroyRenderer(pRenderer);
-	SDL_DestroyWindow(pWindow);
-
-	myShip.cleanup();
-	for (int i = 0; i < sprites.size(); i++)
-	{
-		sprites[i]->cleanup();
-		delete sprites[i];
-	}
-	myBackground.cleanup();
 }
 
 void Game::spawnEnemy()
@@ -325,6 +403,8 @@ void Game::spawnEnemy()
 	const char* spriteToSpawn = asteroidSpriteImages[rand() % NUM_ASTEROID_SPRITES];
 
 	Sprite* pNewEnemy = new Sprite(pRenderer, spriteToSpawn);
+	pNewEnemy->tag = SpriteTag::ASTEROID;
+
 	//Set start at random position near top of screen
 	Vector2 size = pNewEnemy->getSize();
 
