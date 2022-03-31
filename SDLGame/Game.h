@@ -1,7 +1,6 @@
-// Welcome to the lab! Today we will add targets to shoot!
-// If you need it for reference, the code for shooting has been pushed to GitHub
+// Welcome to the lab! Today we will shoot the targets!
+// If you need it for reference, the code for spawning asteroids from last week has been pushed to GitHub
 // 
-// Quiz 8 available
 // 
 // At the end of all the labs... we will do..
 // -Basic collision detection between sprites
