@@ -63,6 +63,11 @@ Vector2 Sprite::getSize()
 	return Vector2{(float)dst.w, (float)dst.h};
 }
 
+bool Sprite::getMarkedForDeletion()
+{
+	return isMarkedForDeletion;
+}
+
 void Sprite::setPosition(int x, int y)
 {
 	dst.x = x;
@@ -90,6 +95,11 @@ void Sprite::setRotation(double rotationDegrees)
 	rotation = rotationDegrees;
 }
 
+void Sprite::destroy()
+{
+	isMarkedForDeletion = true;
+}
+
 void Sprite::cleanup()
 {
 	SDL_DestroyTexture(pImage);
@@ -111,8 +121,8 @@ bool Sprite::isCollidingWith(Sprite* other)
 
 	//2. Find the sum of the radii of circles surrounding these sprites
 	//2.a find an appropriate radius for each sprite based on their size?
-	float myRadius = max(getSize().x, getSize().y);
-	float otherRadius = max(other->getSize().x, other->getSize().y);
+	float myRadius = max(getSize().x, getSize().y) * 0.5f;
+	float otherRadius = max(other->getSize().x, other->getSize().y) * 0.5f;
 	//2.b. add them
 	float sumRadii = myRadius + otherRadius;
 

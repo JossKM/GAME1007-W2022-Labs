@@ -26,6 +26,13 @@
 //myShip.setScale(2.5, 2.5) //scale sprite by 2.5x
 //myShip.setRotation(180)
 
+enum GameplayTag
+{
+	NONE = -1,
+	PLAYER,
+	ASTEROID,
+	BULLET
+};
 
 //Declaring a new class called Sprite
 class Sprite
@@ -37,11 +44,12 @@ private:
 	SDL_Rect src; //source rectangle, representing which part of the texture to draw this sprite from
 	//a double is short for double-precision floating-point number. float is short for floating point number
 	double rotation;
+	bool isMarkedForDeletion = false;
 
 public:
-	bool isMarkedForDeletion = false;
 	Vector2 position = {0,0};
 	Vector2 velocity = {0,0};
+	GameplayTag tag = NONE;
 
 	//Constructors
 	Sprite(); // default constructor
@@ -57,6 +65,7 @@ public:
 
 	//getters, also called "accessors"
 	Vector2 getSize();
+	bool getMarkedForDeletion();
 
 	//setters, also called "modifiers" or "mutators"
 	void setPosition(int x, int y);
@@ -64,11 +73,20 @@ public:
 	void setDimensions(int width, int height);
 	void setRotation(double rotationDegrees);
 
+	void destroy();
 	void cleanup();
 
 	//getters
 	SDL_Point getPosition();
 
+	// It is a good idea to make sure you design code to be easily read like regular human language
+	// consider:
+	// CollisionManager::CircleCircleCollisionDetect(circle1, circle2) 
+	// ship->isCollidingWith(Asteroid1)
+	// 
+	// ship = new Sprite(500, 670, 30, 60);
+	// ship.setPosition(500, 670);
+	// ship.setDimensions(30, 60);
 	bool isCollidingWith(Sprite* other); // return true if colliding (circle-circle) and false otherwise
 };
 

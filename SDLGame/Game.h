@@ -63,6 +63,8 @@ public:
 
 	void handlePlayerActions(const float deltaTime);
 	void spawnEnemy();
+	void updateCollisionDetection();
+	void destroyIfOutOfBounds(Sprite* pSpriteToDestroy);
 
 	void quit();
 

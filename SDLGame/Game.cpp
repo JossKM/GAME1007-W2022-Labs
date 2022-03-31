@@ -116,8 +116,13 @@ void Game::input()
 	}
 }
 
+
+
 void Game::update(const float deltaTime)
 {
+	//Check collision between bullets and asteroids
+	updateCollisionDetection();
+
 	enemySpawnTimer -= deltaTime;
 	///Spawn asteroids periodically
 	if (enemySpawnTimer <= 0)
@@ -131,7 +136,54 @@ void Game::update(const float deltaTime)
 		}
 	}
 
-	/// <summary>
+	handlePlayerActions(deltaTime);
+
+	//update our sprites
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		Sprite* pSprite = sprites[i];
+		pSprite->update(deltaTime);
+
+		//Destroy bullets out of bounds
+		Bullet* pBullet = dynamic_cast<Bullet*>(pSprite); // Casting a base class pointer to a child class (not always successful)
+		//If unsuccessfule (i.e. it's not a bullet) then the pointer after the cast will be null
+		destroyIfOutOfBounds(pBullet);
+	}
+
+	//Clean up dead sprites. Removes them from the container if they are marked for deletion
+	for (auto iterator = sprites.begin(); iterator != sprites.end();)
+	{
+		Sprite* pSprite = (*iterator);
+		if (pSprite->getMarkedForDeletion())
+		{
+			pSprite->cleanup();
+			delete pSprite; // clears the memory
+			pSprite = nullptr;
+			iterator = sprites.erase(iterator); // remove element from container
+		}
+		else
+		{
+			iterator++;
+		}
+	}
+}
+
+void Game::draw()
+{
+	SDL_SetRenderDrawColor(pRenderer, 245, 180, 180, 255); // Select a color
+	SDL_RenderClear(pRenderer); // Paint the canvas according to the last selected color
+
+	//Draw all the things
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		sprites[i]->draw(pRenderer);
+	}
+
+	SDL_RenderPresent(pRenderer); // Show the canvas
+}
+
+void Game::handlePlayerActions(const float deltaTime)
+{/// <summary>
 	///  Player actions
 	/// </summary>
 	/// <param name="deltaTime"></param>
@@ -152,7 +204,7 @@ void Game::update(const float deltaTime)
 			float totalSpread = 1.0f;
 			for (int i = 0; i < numProjectiles; i++)
 			{
-				float angle = (i * (totalSpread / (numProjectiles- 1))) - (totalSpread * 0.5);
+				float angle = (i * (totalSpread / (numProjectiles - 1))) - (totalSpread * 0.5);
 				Vector2 launchVector = Vector2{ sin(angle) * -bulletSpeed, cos(angle) * -bulletSpeed };
 
 				Bullet* newBullet = new Bullet(pRenderer, launchVector); // the new keyword creates an instance of the class and returns a pointer to it
@@ -190,60 +242,6 @@ void Game::update(const float deltaTime)
 	float damping = 56.25f * deltaTime;
 	anotherShip.velocity.x *= damping;
 	anotherShip.velocity.y *= damping;
-
-	for (int i = 0; i < sprites.size(); i++)
-	{
-		Sprite* pSprite = sprites[i];
-		pSprite->update(deltaTime);
-
-		Bullet* pBullet = dynamic_cast<Bullet*>(pSprite); // Casting a base class pointer to a child class (not always successful)
-		//If unsuccessfule (i.e. it's not a bullet) then the pointer after the cast will be null
-		if (pBullet != nullptr) // success. Must be a bullet...
-		{
-			if (pBullet->position.y > windowSizeY
-				|| pBullet->position.y < -pBullet->getSize().y
-				|| pBullet->position.x < -pBullet->getSize().x
-				|| pBullet->position.x > windowSizeX
-				)
-			{
-				pBullet->isMarkedForDeletion = true;
-			}
-		}
-	}
-
-	for (auto iterator = sprites.begin(); iterator != sprites.end();)
-	{
-		Sprite* pSprite = (*iterator);
-		if (pSprite->isMarkedForDeletion)
-		{
-			pSprite->cleanup();
-			delete pSprite; // clears the memory
-			pSprite = nullptr;
-			iterator = sprites.erase(iterator); // remove element from container
-		}
-		else
-		{
-			iterator++;
-		}
-	}
-}
-
-void Game::draw()
-{
-	SDL_SetRenderDrawColor(pRenderer, 245, 180, 180, 255); // Select a color
-	SDL_RenderClear(pRenderer); // Paint the canvas according to the last selected color
-
-	//Draw all the things
-	for (int i = 0; i < sprites.size(); i++)
-	{
-		sprites[i]->draw(pRenderer);
-	}
-
-	SDL_RenderPresent(pRenderer); // Show the canvas
-}
-
-void Game::handlePlayerActions(const float deltaTime)
-{
 }
 
 void Game::spawnEnemy()
@@ -256,6 +254,7 @@ void Game::spawnEnemy()
 	};
 	const char* spriteFileToChoose = (enemySprites[rand() % NUM_SPRITES]).c_str(); //Choose a random sprite
 	Sprite* newEnemy = new Sprite(pRenderer, spriteFileToChoose);
+	newEnemy->tag = ASTEROID;
 
 	//Spawn near top of screen
 	int xStart = (rand() % windowSizeX) - (newEnemy->getSize().x);
@@ -265,6 +264,65 @@ void Game::spawnEnemy()
 	newEnemy->velocity = Vector2{float((rand() % 200) - 100), float((rand() % 100) + 100.0f)};
 
 	sprites.push_back(newEnemy);
+}
+
+void Game::updateCollisionDetection()
+{
+	//Write this function (with actual code) and send it to me now (just copy paste it into a private message)
+	//Check collision between bullets and asteroids
+	//For each bullet...
+	//	For each asteroid...
+	//		if bullet touching asteroid (using our Sprite isColliding() function)...
+	//			then make the asteroid disappear... or more...?
+	//		else
+	//			do nothing...
+	//
+
+	//we could restructure the code to have a container (std::vector) of just bullets and just asteroids
+	//we could visit each sprite and find out if it is a bullet?
+	//we could just check every sprite against every other...
+	//For each sprite
+		//For each other sprite
+			//if one is a bullet and one is an asteroid...
+				//if they are colliding
+					//destroy both
+				//else do nothing
+
+	for (int i = 0; i < sprites.size(); i++)
+	{
+		Sprite* pSprite1 = sprites[i];
+
+		for (int j = i + 1; j < sprites.size(); j++)
+		{
+			Sprite* pSprite2 = sprites[j];
+
+			//how can i tell if they are bullet and asteroid???
+			if (pSprite1->tag == BULLET && pSprite2->tag == ASTEROID 
+				|| pSprite2->tag == BULLET && pSprite1->tag == ASTEROID)
+			{
+				if (pSprite1->isCollidingWith(pSprite2))
+				{
+					pSprite1->destroy();
+					pSprite2->destroy();
+				}
+			}
+		}
+	}
+}
+
+void Game::destroyIfOutOfBounds(Sprite* pSpriteToDestroy)
+{
+	if (pSpriteToDestroy != nullptr) // success. Must be a bullet...
+	{
+		if (pSpriteToDestroy->position.y > windowSizeY
+			|| pSpriteToDestroy->position.y < -pSpriteToDestroy->getSize().y
+			|| pSpriteToDestroy->position.x < -pSpriteToDestroy->getSize().x
+			|| pSpriteToDestroy->position.x > windowSizeX
+			)
+		{
+			pSpriteToDestroy->destroy();
+		}
+	}
 }
 
 void Game::quit()
