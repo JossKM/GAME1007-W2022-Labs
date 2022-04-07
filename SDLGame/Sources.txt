@@ -1,0 +1,8 @@
+Citations
+-Joss's 12pm lab was used as a base for the code, and his labs were used for ideas
+-???? (Who gave the ideas) (what ideas they were) (link if applicable)
+-
+
+Assets
+-bgm.wav - by Joss
+-laserBlast.wav by Joss
