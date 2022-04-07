@@ -1,14 +1,13 @@
-// Welcome to the lab! Today we will shoot the targets!
-// If you need it for reference, the code for spawning asteroids from last week has been pushed to GitHub
+// Welcome to the lab! Today we will play sounds!
 // 
 // 
 // At the end of all the labs... we will do..
-// -Basic collision detection between sprites
-// -Hold space to shoot
-// -Spawn targets to shoot
-// -Detect when player touches a target
-// -Detect when player bullet touches a target
-// -Play music and sounds
+// -Basic collision detection between sprites ...done
+// -Hold space to shoot ...done
+// -Spawn targets to shoot ...done
+// -Detect when player touches a target ...done
+// -Detect when player bullet touches a target ...done
+// -Play music and sounds ...todo
 // 
 // Will NOT show you in the labs
 // -How to make enemies shoot back
