@@ -1,5 +1,4 @@
-// Welcome to the lab! Today we will try to destroy our targets on collision with bullets
-// If you need it for reference, the code from last week has been pushed to GitHub
+// Welcome to the lab! Today we will add sounds!
 // 
 // 
 // At the end of all the labs... we will do..
@@ -7,7 +6,7 @@
 // -Hold space to shoot... done
 // -Spawn targets to shoot... done
 // -Detect when player touches a target... todo
-// -Detect when player bullet touches a target... todo
+// -Detect when player bullet touches a target... done
 // -Play music and sounds... todo
 // 
 // Will NOT show you in the labs
